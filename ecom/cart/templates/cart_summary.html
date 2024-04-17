@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+        <br/>          
+        <div class="container">
+          {% for product in cart_products %}
+            <div>       
+            <div class="card mb-3" style="max-width: 100%;">
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <img src="{{product.image.url }}" class="img-fluid rounded-start" alt="...">
+                  </div>
+                  <div class="col-md-8">
+                    <div class="card-body">
+                      <br/>  
+                      <br/> 
+                      <br/> 
+                      <h5 class="card-title" style="padding-top: 30px;">{{ product.name }}</h5>
+                      <p class="card-text">${{ product.price }}</p>
+                      <div style="padding:3px ;">Quantity:</div>
+                            <select class="form-select" id="select{{product.id}}" style="width: 100px;"> 
+                                    {% for key, value in quantities.items %}
+                                       {% if key == product.id|slugify %}
+                                          <option selected>{{ value }}</option>
+                                       {% endif %}
+                                    {% endfor %}
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select> 
+                          </br>
+                          
+                      <button type="button" data-index="{{product.id}}" class="btn btn-secondary update_cart">Update</button>
+                      <button type="button" data-index="{{product.id}}" class="btn btn-danger delete_product">Remove</button>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            </div>  
+          {% endfor %}
+          <br/>
+          <h3 style="text-align: center;"><span class="badge bg-success">Total: ${{ totals }}</span></h3>
+          <br/>
+          <div class="text-center"><a class ="btn btn-outline-dark mt-auto" id="complete_button" href ="{% url 'shipping_page' %}">Complete </a></div>
+          <br/>
+        </div>       
+    
+<script>
+
+  $(document).on('click', '.update_cart', function(e) {
+                e.preventDefault();
+                var productid = $(this).data('index');
+                $.ajax({
+                    type: 'POST',
+                    url:'{% url "cart_update" %}',
+                    data: {
+                      product_id : $(this).data('index'),
+                      product_qty: $('#select' + productid + ' option:selected').text(),
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      action:'post'
+                },
+    
+                success: function(json) {
+                    location.reload();
+                },
+                error: function(xhr, errmsg, err) {
+    
+                }
+    
+            });
+    
+    
+            })
+
+  $(document).on('click', '.delete_product', function(e){
+            e.preventDefault();
+            $.ajax({
+              type: 'POST',
+              url: '{% url "cart_delete" %}',
+              data: {
+                product_id: $(this).data('index'),
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                action: 'post'
+            },
+            success: function(json){
+            location.reload();
+            },
+            error: function(xhr, errmsg, err){
+            }
+
+
+        });
+
+        })
+
+        $(document).on('click', '#complete_button', function(e) {
+      e.preventDefault();
+      $.ajax({
+        type: 'POST',
+        url: '{% url "clear_cart" %}',
+        data: {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          action: 'post'
+        },
+        success: function(json) {
+          // Handle success, maybe redirect or show a message
+          window.location.href = '{% url "shipping_page" %}';
+        },
+        error: function(xhr, errmsg, err) {
+          // Handle error
+        }
+      });
+    });
+</script>
+{% endblock %}

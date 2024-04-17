@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+        <section class="py-5">
+            <div class="container px-4 px-lg-5 mt-5">
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">  
+                    <div class="card" style="width: 30rem;">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="...">
+                        <div class="card-body">
+                          <h5 class="card-title">{{ product.name}}</h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                          <li class="list-group-item">{{ product.description }}</li>
+                          <li class="list-group-item">${{ product.price }}</li>
+                          <li class="list-group-item">Procuct ID: {{ product.id}}</li>
+                          <li class="list-group-item"><div style="padding-bottom:3px ;">Quantity:</div>
+                            <select class="form-select" id="qty_cart" >
+                              {% for key, value in quantities.items %}
+                                       {% if key == product.id|slugify %}
+                                          <option selected>{{ value }}</option>
+                                       {% endif %}
+                                    {% endfor %}
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select> 
+                          </li>
+                          <li class="list-group-item"><button type="button" value="{{product.id}}" class="btn btn-secondary" id="add_cart">Add to cart</button></li>
+                        </ul>
+                      </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <script>
+            $(document).on('click', '#add_cart', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url:'{% url "cart_add" %}',
+                    data: {
+                      product_id : $('#add_cart').val(),
+                      product_qty: $('#qty_cart option:selected').text(),
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      action:'post'
+                },
+                success: function(json) {
+                    document.getElementById("cart_number").
+                        textContent = json.qty
+                },
+                error: function(xhr, errmsg, err) {
+                }
+            });
+            })
+        </script>
+{% endblock %}
